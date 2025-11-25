@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Rentify - Locação de Acomodações </title>
+
+    <link rel="stylesheet" href="css.css">
+
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <img src="imagens/LogoRentify.png" alt="Logo" /<a href="propriedades.html" class=></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="login.html"> Login </a></li>
+                <li><a href="cadastro.html"> Registar </a></li>
+            </ul>
+        </nav>
+       
+
+    </header>
+
+
+    <section class="search-box">
+        <h1 class="subtexto">
+            Encontre o espaço ideal para relaxar, explorar e viver novas experiências. Tudo com conforto, segurança e
+            aquele clima acolhedor que transforma hospedagens em memórias!
+        </h1>
+    </section>
+
+  
+
+    <section class="banner-duplo">
+        <div class="banner bloco-azul">
+            <div class="texto">
+                <h2>Aluguel simples, sem fiador e sem caução</h2>
+                <p>Alugue seu imóvel com praticidade, autonomia e sem complicações.</p>
+            </div>
+            <img src="imagens/PessoaSegurandoChave.avif" alt="Pessoa segurando chaves">
+        </div>
+
+        <div class="banner bloco-bege">
+            <div class="texto">
+                <h2>Deixe a administração do seu imóvel com quem entende</h2>
+                <p>A Rentify cuida com carinho do seu patrimônio e você ganha mais tempo para aproveitar as coisas boas
+                    da vida.</p>
+            </div>
+            <img src="imagens/PessoaNoNotebook.avif" alt="Pessoa no notebook">
+        </div>
+    </section>
+
+    <footer>
+        <p> Grupo - Enzo C. / Gustavo S. / Henrique / Raphael V. / Yuri C. </p>
+    </footer>
+</body>
+
+<script>
+    const btnBuscar = document.querySelector('.search-btn');
+    const btnReset = document.querySelector('.reset-btn');
+
+    btnBuscar.addEventListener('click', () => {
+        const onde = document.getElementById('filtro-onde').value.toLowerCase();
+        const quando = document.getElementById('filtro-quando').value.toLowerCase();
+        const hospedes = document.getElementById('filtro-hospedes').value.toLowerCase();
+
+        const cards = document.querySelectorAll('.card');
+
+        cards.forEach(card => {
+            const local = card.getAttribute('data-local')?.toLowerCase() || "";
+            const data = card.getAttribute('data-data')?.toLowerCase() || "";
+            const numHospedes = card.getAttribute('data-hospedes')?.toLowerCase() || "";
+
+            if (
+                (onde === "" || local.includes(onde)) &&
+                (quando === "" || data.includes(quando)) &&
+                (hospedes === "" || numHospedes === hospedes || (hospedes === "5+" && parseInt(numHospedes) >= 5))
+            ) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    });
+
+    btnReset.addEventListener('click', () => {
+        document.getElementById('filtro-onde').value = "";
+        document.getElementById('filtro-quando').value = "";
+        document.getElementById('filtro-hospedes').value = "";
+
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => card.style.display = "block");
+    });
+
+</script>
+
+
+
+</html>

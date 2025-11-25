@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Rentify</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">
+      <img src="imagens/LogoRentify.png" alt="Rentify Logo">
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="propriedades.html">Acomodações</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- LOGIN -->
+  <section class="form-container">
+    <div class="form-card">
+      <h2>Bem-vindo de volta!</h2>
+      <form id="formLogin">
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" required>
+
+        <button type="submit">Entrar</button>
+      </form>
+
+      <div class="switch">
+        Ainda não tem conta? <a href="cadastro.html">Cadastrar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CADASTRO DE PROPRIEDADES (Exemplo) -->
+  <section class="form-container">
+    <div class="form-card">
+      <h2>Cadastre sua propriedade</h2>
+      <form id="formPropriedade">
+        <label for="local">Local:</label>
+        <input type="text" id="local" required>
+
+        <label for="preco">Preço:</label>
+        <input type="number" id="preco" step="0.01" required>
+
+        <label for="quartos">Quartos:</label>
+        <input type="number" id="quartos" required>
+
+        <label for="tamanho">Tamanho (m²):</label>
+        <input type="number" id="tamanho" step="0.01" required>
+
+        <label for="imagem">URL da Imagem:</label>
+        <input type="text" id="imagem" required>
+
+        <button type="submit">Cadastrar Propriedade</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    Grupo - Enzo C. / Gustavo S. / Henrique / Raphael V. / Yuri C.
+  </footer>
+
+  <!-- ====================== JAVASCRIPT ====================== -->
+  <script>
+    // --- LOGIN ---
+    document.getElementById("formLogin").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const dados = {
+        EMAIL: document.getElementById("email").value,
+        SENHA: document.getElementById("senha").value
+      };
+
+      try {
+        const resp = await fetch("http://127.0.0.1:5000/login", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(dados)
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          alert("Login realizado com sucesso!");
+          localStorage.setItem("usuario", JSON.stringify(data.usuario)); // salva usuário logado
+          window.location.href = "propriedades.html"; // redireciona para home
+        } else {
+          alert(data.erro);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erro no login");
+      }
+    });
+
+    // --- CADASTRO DE PROPRIEDADE ---
+    document.getElementById("formPropriedade").addEventListener("submit", async function(e){
+      e.preventDefault();
+
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      if (!usuario) {
+        alert("Você precisa estar logado para cadastrar uma propriedade.");
+        return;
+      }
+
+      const dados = {
+        LOCAL: document.getElementById("local").value,
+        PRECO: parseFloat(document.getElementById("preco").value),
+        QUARTOS: parseInt(document.getElementById("quartos").value),
+        TAMANHO: parseFloat(document.getElementById("tamanho").value),
+        IMAGEM: document.getElementById("imagem").value,
+        USUARIO_ID: usuario.ID   // ID do usuário logado
+      };
+
+      try {
+        const resp = await fetch("http://127.0.0.1:5000/propriedades", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(dados)
+        });
+
+        const data = await resp.json();
+        if(resp.ok){
+          alert("Propriedade cadastrada com sucesso!");
+        } else {
+          alert(data.erro);
+        }
+      } catch(err){
+        console.error(err);
+        alert("Erro ao cadastrar propriedade");
+      }
+    });
+  </script>
+</body>
+</html>

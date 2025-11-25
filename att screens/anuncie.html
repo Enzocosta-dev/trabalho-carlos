@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rentify - Anuncie</title>
+  <link rel="stylesheet" href="css.css">
+  <style>
+    /* ---------------- PERFIL ---------------- */
+    .perfil-container {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .perfil-container img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .perfil-dropdown {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0px 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .perfil-dropdown.show {
+      display: flex;
+    }
+
+    /* Fonte preta dentro do dropdown */
+    .perfil-dropdown, 
+    .perfil-dropdown p, 
+    .perfil-dropdown button {
+      color: #000 !important;
+    }
+
+    /* Botão sair com texto preto */
+    .perfil-dropdown button {
+      background: #f1f1f1;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .perfil-dropdown button:hover {
+      background: #ddd;
+    }
+
+    /* Botão admin */
+    .admin-btn {
+      padding: 5px 10px;
+      background: #4a90e2;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    /* Formulário */
+    main {
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    form label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    form input, form select, form button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    form button {
+      margin-top: 15px;
+      background: #4a90e2;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background: #357ABD;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 10px;
+      background: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+      <div class="logo">
+          <a href="cadastro.html"><img src="imagens/LogoRentify.png" alt="Logo Rentify"></a>
+      </div>
+      <nav>
+          <ul>
+              <li><a href="propriedades.html">Acomodações</a></li>
+              <li><a href="anuncie.html">Anuncie</a></li>
+              <li id="admin-btn-container"></li>
+              <li>
+                  <div class="perfil-container" id="perfilContainer">
+                      <img id="fotoPerfil" src="imagens/default.png" alt="Foto do Perfil">
+                      <div class="perfil-dropdown" id="perfilDropdown">
+                          <p id="nomeUsuario">Nome: </p>
+                          <p id="emailUsuario">Email: </p>
+                          <button id="btnSair">Sair</button>
+                      </div>
+                  </div>
+              </li>
+          </ul>
+      </nav>
+  </header>
+
+  <main>
+    <h2>Cadastrar nova propriedade</h2>
+
+    <form id="formImovel">
+      <label>Localização:</label>
+      <select id="local" required>
+        <option value="">Selecione...</option>
+        <option>Rio de Janeiro</option>
+        <option>São Paulo</option>
+        <option>Minas Gerais</option>
+        <option>Bahia</option>
+      </select>
+
+      <label>Preço (R$):</label>
+      <input type="number" id="preco" required>
+
+      <label>Número de quartos:</label>
+      <input type="number" id="quartos" required>
+
+      <label>Tamanho (m²):</label>
+      <input type="number" id="tamanho" step="0.01" required>
+
+      <label>URL da imagem:</label>
+      <input type="text" id="imagem" placeholder="Ex: https://meusite.com/imagem.jpg" required>
+
+      <button type="submit">Cadastrar Imóvel</button>
+    </form>
+  </main>
+
+  <footer>
+    Grupo - Enzo C. / Gustavo S. / Henrique / Raphael V. / Yuri C.
+  </footer>
+
+  <script>
+    // ---------- CARREGAR DADOS DO USUÁRIO ----------
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+    if (!usuario) {
+        document.getElementById("nomeUsuario").textContent = "Nome: Visitante";
+        document.getElementById("emailUsuario").textContent = "";
+    } else {
+        document.getElementById("nomeUsuario").textContent = "Nome: " + usuario.NOME;
+        document.getElementById("emailUsuario").textContent = "Email: " + usuario.EMAIL;
+
+        const foto = usuario.FOTO ? usuario.FOTO : "imagens/default.png";
+        document.getElementById("fotoPerfil").src = foto;
+
+        if(usuario.NIVEL === "admin"){
+            document.getElementById("admin-btn-container").innerHTML = `
+                <a href="admin.html" class="admin-btn">Admin</a>
+            `;
+        }
+    }
+
+    // ---------- CONTROLAR O DROPDOWN ----------
+    const perfilContainer = document.getElementById("perfilContainer");
+    const perfilDropdown = document.getElementById("perfilDropdown");
+
+    perfilContainer.addEventListener("click", (event) => {
+        perfilDropdown.classList.toggle("show");
+        event.stopPropagation();
+    });
+
+    document.addEventListener("click", () => {
+        perfilDropdown.classList.remove("show");
+    });
+
+    // ---------- BOTÃO DE SAIR ----------
+    document.getElementById("btnSair").addEventListener("click", () => {
+        localStorage.removeItem("usuario");
+        window.location.href = "login.html";
+    });
+
+    // ---------- CADASTRO DE IMÓVEL ----------
+    const formImovel = document.getElementById("formImovel");
+
+    formImovel.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (!usuario) {
+            alert("Você precisa estar logado para cadastrar imóveis.");
+            return;
+        }
+
+        const dados = {
+            LOCAL: document.getElementById("local").value,
+            PRECO: parseFloat(document.getElementById("preco").value),
+            QUARTOS: parseInt(document.getElementById("quartos").value),
+            TAMANHO: parseFloat(document.getElementById("tamanho").value),
+            IMAGEM: document.getElementById("imagem").value,
+            USUARIO_ID: usuario.ID   // *** AGORA ENVIA CORRETAMENTE PARA O BACKEND ***
+        };
+
+        const resposta = await fetch("http://127.0.0.1:5000/propriedades", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dados)
+        });
+
+        const resultado = await resposta.json();
+
+        if (resposta.ok) {
+            alert("Imóvel cadastrado com sucesso!");
+            formImovel.reset();
+        } else {
+            alert("Erro: " + resultado.erro);
+        }
+    });
+</script>
+
+</body>
+</html>

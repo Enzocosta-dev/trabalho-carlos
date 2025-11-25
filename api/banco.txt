@@ -1,0 +1,61 @@
+-- Criação do banco de dados
+CREATE DATABASE IF NOT EXISTS CacaoImobiliaria;
+USE CacaoImobiliaria;
+
+-- Tabela de Usuários
+CREATE TABLE Usuarios (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    NOME VARCHAR(100) NOT NULL,
+    CPF CHAR(11) NOT NULL UNIQUE,
+    TELEFONE VARCHAR(15),
+    EMAIL VARCHAR(100) UNIQUE
+);
+
+-- Tabela de Propriedades
+CREATE TABLE Propriedades (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    LOCAL VARCHAR(100) NOT NULL,
+    PRECO DECIMAL(12,2) NOT NULL,
+    QUARTOS INT NOT NULL,
+    TAMANHO DECIMAL(10,2) NOT NULL
+);
+
+-- Tabela de Reservas
+CREATE TABLE Reservas (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    USUARIO_ID INT NOT NULL,
+    PROPRIEDADE_ID INT NOT NULL,
+    PRECO DECIMAL(12,2) NOT NULL,
+    DATA_RESERVA DATE NOT NULL,
+    FOREIGN KEY (USUARIO_ID) REFERENCES Usuarios(ID) ON DELETE CASCADE,
+    FOREIGN KEY (PROPRIEDADE_ID) REFERENCES Propriedades(ID) ON DELETE CASCADE
+);
+
+USE CadastroUsuarios;
+GO
+
+EXEC sp_columns Usuarios;
+
+
+-- Confirma que o banco existe
+SELECT name FROM sys.databases;
+
+-- Confirma que as tabelas existem dentro do banco
+USE CadastroUsuarios;
+GO
+SELECT * FROM INFORMATION_SCHEMA.TABLES;
+
+USE CadastroUsuarios;
+GO
+EXEC sp_columns Usuarios;
+EXEC sp_columns Propriedades;
+EXEC sp_columns Reservas;
+
+
+USE CadastroUsuarios;
+GO
+
+-- Verifica colunas da tabela Usuarios
+SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'Usuarios';

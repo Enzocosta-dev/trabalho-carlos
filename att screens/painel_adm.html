@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo - Rentify</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f6f6;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background: #333;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f2f2f2;
+    }
+
+    input, select, button {
+      padding: 6px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      cursor: pointer;
+      margin: 2px;
+      transition: 0.3s;
+    }
+
+    .save {
+      background: #007bff;
+      color: white;
+    }
+
+    .delete {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .logout {
+      background: #e74c3c;
+      color: white;
+    }
+
+    img.user-photo, img.imagem-imovel {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    img.imagem-imovel {
+      border-radius: 5px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Painel Administrativo</h1>
+    <button class="logout" id="logoutBtn">Sair</button>
+  </header>
+
+  <h2 style="text-align:center;">Usuários</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Foto</th>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Email</th>
+        <th>Telefone</th>
+        <th>Nível</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaUsuarios">
+      <tr><td colspan="8">Carregando usuários...</td></tr>
+    </tbody>
+  </table>
+
+  <h2 style="text-align:center;">Imóveis</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Imagem</th>
+        <th>Local</th>
+        <th>Preço</th>
+        <th>Quartos</th>
+        <th>Tamanho (m²)</th>
+        <th>Proprietário</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaImoveis">
+      <tr><td colspan="8">Carregando imóveis...</td></tr>
+    </tbody>
+  </table>
+
+<script>
+  // --- AUTENTICAÇÃO ADM ---
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  if (!usuario || usuario.NIVEL !== "adm") {
+    alert("Acesso negado! Apenas administradores podem acessar.");
+    window.location.href = "index.html";
+  }
+
+  // --- LOGOUT ---
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("usuario");
+    window.location.href = "login.html";
+  });
+
+  // --- USUÁRIOS ---
+  async function carregarUsuarios() {
+    try {
+      const resp = await fetch("http://localhost:5000/usuarios");
+      const usuarios = await resp.json();
+      const tabela = document.getElementById("tabelaUsuarios");
+      tabela.innerHTML = "";
+
+      usuarios.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${u.ID}</td>
+          <td><img src="${u.FOTO}" class="user-photo"></td>
+          <td>${u.NOME}</td>
+          <td>${u.CPF}</td>
+          <td>${u.EMAIL}</td>
+          <td>${u.TELEFONE || "-"}</td>
+          <td>
+            <select id="nivel-${u.ID}">
+              <option value="cliente" ${u.NIVEL === "cliente" ? "selected" : ""}>Cliente</option>
+              <option value="adm" ${u.NIVEL === "adm" ? "selected" : ""}>Administrador</option>
+            </select>
+          </td>
+          <td>
+            <button class="save" onclick="salvarUsuario(${u.ID})">Salvar</button>
+            <button class="delete" onclick="excluirUsuario(${u.ID})">Excluir</button>
+          </td>
+        `;
+        tabela.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function salvarUsuario(id) {
+    const novoNivel = document.getElementById(`nivel-${id}`).value;
+    try {
+      const resp = await fetch(`http://localhost:5000/usuarios/${id}`, {
+        method: "PUT",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({NIVEL: novoNivel})
+      });
+      if(resp.ok) {
+        alert("Usuário atualizado!");
+        carregarUsuarios();
+      } else {
+        alert("Erro ao atualizar usuário.");
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  async function excluirUsuario(id) {
+    if(!confirm("Tem certeza que deseja excluir este usuário?")) return;
+    try {
+      const resp = await fetch(`http://localhost:5000/usuarios/${id}`, {method:"DELETE"});
+      if(resp.ok) {
+        alert("Usuário excluído!");
+        carregarUsuarios();
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  // --- IMÓVEIS ---
+  async function carregarImoveis() {
+    try {
+      const resp = await fetch("http://localhost:5000/propriedades");
+      const imoveis = await resp.json();
+      const tabela = document.getElementById("tabelaImoveis");
+      tabela.innerHTML = "";
+
+      imoveis.forEach(i => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i.ID}</td>
+          <td><img src="${i.IMAGEM}" class="imagem-imovel"></td>
+          <td><input type="text" value="${i.LOCAL}" id="local-${i.ID}"></td>
+          <td><input type="number" value="${i.PRECO}" id="preco-${i.ID}" step="0.01"></td>
+          <td><input type="number" value="${i.QUARTOS}" id="quartos-${i.ID}"></td>
+          <td><input type="number" value="${i.TAMANHO}" id="tamanho-${i.ID}" step="0.01"></td>
+          <td>${i.USUARIO_ID}</td>
+          <td>
+            <button class="save" onclick="salvarImovel(${i.ID})">Salvar</button>
+            <button class="delete" onclick="excluirImovel(${i.ID})">Excluir</button>
+          </td>
+        `;
+        tabela.appendChild(tr);
+      });
+    } catch(err) { console.error(err); }
+  }
+
+  async function salvarImovel(id) {
+    const dados = {
+      LOCAL: document.getElementById(`local-${id}`).value,
+      PRECO: parseFloat(document.getElementById(`preco-${id}`).value),
+      QUARTOS: parseInt(document.getElementById(`quartos-${id}`).value),
+      TAMANHO: parseFloat(document.getElementById(`tamanho-${id}`).value)
+    };
+    try {
+      const resp = await fetch(`http://localhost:5000/propriedades/${id}`, {
+        method:"PUT",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(dados)
+      });
+      if(resp.ok) {
+        alert("Imóvel atualizado!");
+        carregarImoveis();
+      } else {
+        alert("Erro ao atualizar imóvel.");
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  async function excluirImovel(id) {
+    if(!confirm("Tem certeza que deseja excluir este imóvel?")) return;
+    try {
+      const resp = await fetch(`http://localhost:5000/propriedades/${id}`, {method:"DELETE"});
+      if(resp.ok) {
+        alert("Imóvel excluído!");
+        carregarImoveis();
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  // --- Carregar tudo ---
+  window.addEventListener("DOMContentLoaded", () => {
+    carregarUsuarios();
+    carregarImoveis();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro | Rentify</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">
+      <img src="imagens/LogoRentify.png" alt="Rentify Logo">
+      <h1>Rentify</h1>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="propriedades.html">Acomodações</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="form-container">
+    <div class="form-card">
+      <h2>Crie sua conta no Rentify</h2>
+      <form id="formCadastro">
+
+        <label>Foto de Perfil:</label>
+        <input type="text" id="foto" placeholder="Cole o link da sua foto" required>
+
+        <label>Nome:</label>
+        <input type="text" id="nome" placeholder="Digite seu nome completo" maxlength="50" required>
+
+        <label>Telefone:</label>
+        <input type="text" id="telefone" placeholder="Digite seu telefone com DDD" maxlength="15" required>
+
+        <label>CPF:</label>
+        <input type="text" id="cpf" placeholder="Digite seu CPF (apenas números)" maxlength="11" required>
+
+        <label>Email:</label>
+        <input type="email" id="email" placeholder="Digite seu e-mail" maxlength="50" required>
+
+        <label>Senha:</label>
+        <input type="password" id="senha" placeholder="Crie uma senha segura" maxlength="50" required>
+
+        <button type="submit">Cadastrar</button>
+      </form>
+
+      <div class="switch">
+        Já tem conta? <a href="login.html">Entrar</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Grupo - Enzo C. / Gustavo S. / Henrique / Raphael V. / Yuri C.
+  </footer>
+
+  <script>
+    document.getElementById("formCadastro").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Pega os valores e limpa CPF e telefone para números apenas
+      const dados = {
+        FOTO: document.getElementById("foto").value,
+        NOME: document.getElementById("nome").value.trim(),
+        TELEFONE: document.getElementById("telefone").value.replace(/\D/g,''),
+        CPF: document.getElementById("cpf").value.replace(/\D/g,''),
+        EMAIL: document.getElementById("email").value.trim(),
+        SENHA: document.getElementById("senha").value,
+        NIVEL: "cliente" // nível padrão
+      };
+
+      try {
+        const resp = await fetch("http://localhost:5000/usuarios", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados)
+        });
+
+        const data = await resp.json();
+
+        if (resp.ok) {
+          alert("✅ " + data.mensagem);
+          localStorage.setItem("usuario", JSON.stringify(dados)); // salva usuário logado
+          window.location.href = "login.html"; // redireciona para login
+        } else {
+          alert("❌ " + data.erro);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Erro ao conectar com o servidor: " + err);
+      }
+    });
+  </script>
+</body>
+</html>
